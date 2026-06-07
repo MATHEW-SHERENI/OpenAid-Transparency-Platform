@@ -49,6 +49,9 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/funding-flows/reports/**").permitAll()
 
+                        // ---- ADMIN only: user administration (incl. READS, which expose emails/roles) ----
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasRole("ADMIN")
+
                         // ---- ADMIN only: creating / changing core data ----
                         .requestMatchers(HttpMethod.POST, "/api/donors/**", "/api/recipients/**",
                                 "/api/aid-projects/**", "/api/funding-flows/**", "/api/users/**").hasRole("ADMIN")

@@ -25,13 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Web-layer tests for AppUserController. User management is ADMIN-only for writes.
- * We confirm a created user's response never leaks credentials, and the standard
- * 401/403/400/409 behaviours.
- *
- * NOTE: GET /api/users currently falls under "anyRequest().authenticated()", so any
- * logged-in user can list users. We assert only the unambiguous cases here (ADMIN
- * read OK, anonymous blocked) pending a decision on whether reads should be ADMIN-only.
+ * Web-layer tests for AppUserController. User administration is ADMIN-only for
+ * BOTH reads and writes (user reads expose emails/roles). We confirm a user
+ * response never leaks credentials, and the standard 401/403/400/409 behaviours.
  */
 @WebMvcTest(AppUserController.class)
 @Import(SecurityConfig.class)
@@ -66,6 +62,15 @@ class AppUserControllerTest {
                 // The response shape has no password / passwordHash field at all.
                 .andExpect(jsonPath("$[0].passwordHash").doesNotExist())
                 .andExpect(jsonPath("$[0].password").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(roles = "CITIZEN")
+    void getAll_returns403ForNonAdmin() throws Exception {
+        // User reads are now ADMIN-only - a CITIZEN must not be able to list users.
+        mockMvc.perform(get("/api/users"))
+                .andExpect(status().isForbidden());
+        verify(service, never()).findAll();
     }
 
     @Test
