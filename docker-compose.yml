@@ -1,0 +1,27 @@
+# Local development infrastructure.
+# Start it with:   docker compose up -d
+# Stop it with:    docker compose down        (data is kept in the volume)
+# Wipe it with:    docker compose down -v      (data volume deleted)
+services:
+  postgres:
+    image: postgres:17
+    container_name: openaid-postgres
+    environment:
+      POSTGRES_DB: openaid
+      POSTGRES_USER: openaid
+      POSTGRES_PASSWORD: openaid
+    ports:
+      # Host 5433 -> container 5432, so we don't collide with a local Postgres
+      # that may already be running on the standard 5432 port.
+      - "5433:5432"
+    volumes:
+      - openaid-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # The app should only start once Postgres is genuinely ready to accept connections.
+      test: ["CMD-SHELL", "pg_isready -U openaid -d openaid"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  openaid-pgdata:
