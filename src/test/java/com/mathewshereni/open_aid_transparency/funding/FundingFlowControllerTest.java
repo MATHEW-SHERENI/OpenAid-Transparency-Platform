@@ -20,6 +20,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -37,6 +39,9 @@ class FundingFlowControllerTest {
 
     @MockitoBean
     private FundingFlowService service;
+
+    @MockitoBean
+    private ReportExportService reportExportService;
 
     @MockitoBean
     private JwtService jwtService;
@@ -59,6 +64,30 @@ class FundingFlowControllerTest {
 
         mockMvc.perform(get("/api/funding-flows/reports/by-recipient"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void csvExport_isPublicWithAttachmentHeaderAndCsvContentType() throws Exception {
+        when(service.totalByRecipient()).thenReturn(List.of());
+        when(reportExportService.toCsv(List.of())).thenReturn("header\r\n".getBytes());
+
+        mockMvc.perform(get("/api/funding-flows/reports/by-recipient.csv"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"))
+                .andExpect(header().string("Content-Disposition",
+                        "attachment; filename=\"funding-by-recipient.csv\""));
+    }
+
+    @Test
+    void pdfExport_isPublicWithPdfContentType() throws Exception {
+        when(service.totalByRecipient()).thenReturn(List.of());
+        when(reportExportService.toPdf(List.of())).thenReturn("%PDF-1.4".getBytes());
+
+        mockMvc.perform(get("/api/funding-flows/reports/by-recipient.pdf"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                .andExpect(header().string("Content-Disposition",
+                        "attachment; filename=\"funding-by-recipient.pdf\""));
     }
 
     @Test

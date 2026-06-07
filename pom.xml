@@ -102,6 +102,13 @@
             <version>2.5.0</version>
         </dependency>
 
+        <!-- OpenPDF: generate the funding report as a downloadable PDF table. -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>3.0.5</version>
+        </dependency>
+
         <!-- JSON Web Token (JWT) support: api at compile time, impl + jackson at runtime -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

@@ -2,7 +2,9 @@ package com.mathewshereni.open_aid_transparency.funding;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +26,7 @@ import java.util.List;
 public class FundingFlowController {
 
     private final FundingFlowService service;
+    private final ReportExportService reportExportService;
 
     @GetMapping
     public List<FundingFlowResponse> getAll() {
@@ -34,6 +37,28 @@ public class FundingFlowController {
     @GetMapping("/reports/by-recipient")
     public List<FundingByRecipient> totalByRecipient() {
         return service.totalByRecipient();
+    }
+
+    /** Same report as a downloadable CSV file. */
+    @GetMapping(value = "/reports/by-recipient.csv", produces = "text/csv")
+    public ResponseEntity<byte[]> totalByRecipientCsv() {
+        byte[] body = reportExportService.toCsv(service.totalByRecipient());
+        return fileResponse(body, new MediaType("text", "csv"), "funding-by-recipient.csv");
+    }
+
+    /** Same report as a downloadable PDF file. */
+    @GetMapping(value = "/reports/by-recipient.pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> totalByRecipientPdf() {
+        byte[] body = reportExportService.toPdf(service.totalByRecipient());
+        return fileResponse(body, MediaType.APPLICATION_PDF, "funding-by-recipient.pdf");
+    }
+
+    /** Build a file-download response: the right content type plus an attachment header. */
+    private ResponseEntity<byte[]> fileResponse(byte[] body, MediaType type, String filename) {
+        return ResponseEntity.ok()
+                .contentType(type)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .body(body);
     }
 
     @GetMapping("/{id}")
