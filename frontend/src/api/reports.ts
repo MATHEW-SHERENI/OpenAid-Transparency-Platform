@@ -6,6 +6,7 @@
 
 export interface FundingByRecipient {
   recipientId: number
+  isoCode: string | null
   countryName: string
   currency: string
   totalAmount: number
