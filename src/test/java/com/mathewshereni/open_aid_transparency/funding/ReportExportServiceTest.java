@@ -23,26 +23,26 @@ class ReportExportServiceTest {
     @Test
     void csv_writesHeaderAndPlainRowWithCrlf() {
         String out = csv(List.of(
-                new FundingByRecipient(1L, "Kenya", "USD", new BigDecimal("12834880127.46"), 6L)));
+                new FundingByRecipient(1L, "KEN", "Kenya", "USD", new BigDecimal("12834880127.46"), 6L)));
 
-        assertThat(out).startsWith("recipientId,countryName,currency,totalAmount,flowCount\r\n");
+        assertThat(out).startsWith("recipientId,isoCode,countryName,currency,totalAmount,flowCount\r\n");
         // A name with no special characters is NOT quoted.
-        assertThat(out).contains("1,Kenya,USD,12834880127.46,6\r\n");
+        assertThat(out).contains("1,KEN,Kenya,USD,12834880127.46,6\r\n");
     }
 
     @Test
     void csv_quotesFieldsContainingACommaSoTheRowIsNotCorrupted() {
         String out = csv(List.of(
-                new FundingByRecipient(11L, "Congo, Dem. Rep.", "USD", new BigDecimal("100.00"), 4L)));
+                new FundingByRecipient(11L, "COD", "Congo, Dem. Rep.", "USD", new BigDecimal("100.00"), 4L)));
 
-        // The comma inside the name must be wrapped in quotes, keeping 5 columns.
-        assertThat(out).contains("11,\"Congo, Dem. Rep.\",USD,100.00,4\r\n");
+        // The comma inside the name must be wrapped in quotes, keeping the columns aligned.
+        assertThat(out).contains("11,COD,\"Congo, Dem. Rep.\",USD,100.00,4\r\n");
     }
 
     @Test
     void csv_escapesEmbeddedQuotesByDoublingThem() {
         String out = csv(List.of(
-                new FundingByRecipient(2L, "The \"Best\" Fund", "USD", new BigDecimal("1.00"), 1L)));
+                new FundingByRecipient(2L, "TBF", "The \"Best\" Fund", "USD", new BigDecimal("1.00"), 1L)));
 
         // A literal " becomes "" and the whole field is quoted.
         assertThat(out).contains("\"The \"\"Best\"\" Fund\"");
@@ -50,9 +50,10 @@ class ReportExportServiceTest {
 
     @Test
     void csv_amountIsPlainNotScientificNotation() {
-        // A large value must not come out as "1.23E10".
+        // A large value must not come out as "1.23E10". (Nigeria/NGA avoids a stray
+        // uppercase 'E' from other fields so the doesNotContain check stays meaningful.)
         String out = csv(List.of(
-                new FundingByRecipient(1L, "Kenya", "USD", new BigDecimal("12300000000"), 1L)));
+                new FundingByRecipient(2L, "NGA", "Nigeria", "USD", new BigDecimal("12300000000"), 1L)));
 
         assertThat(out).contains("12300000000");
         assertThat(out).doesNotContain("E");
@@ -61,7 +62,7 @@ class ReportExportServiceTest {
     @Test
     void pdf_producesANonEmptyPdfDocument() {
         byte[] pdf = service.toPdf(List.of(
-                new FundingByRecipient(1L, "Kenya", "USD", new BigDecimal("100.00"), 2L)));
+                new FundingByRecipient(1L, "KEN", "Kenya", "USD", new BigDecimal("100.00"), 2L)));
 
         assertThat(pdf).isNotEmpty();
         // Every PDF file begins with the "%PDF" magic marker.

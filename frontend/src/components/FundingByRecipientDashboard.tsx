@@ -9,6 +9,7 @@ import {
   YAxis,
 } from 'recharts'
 import { fetchFundingByRecipient, type FundingByRecipient } from '../api/reports'
+import { FundingMap } from './FundingMap'
 
 // Compact money formatting for axis/labels, e.g. 18996950927 -> "$19B".
 const compactUsd = new Intl.NumberFormat('en-US', {
@@ -53,6 +54,9 @@ export function FundingByRecipientDashboard() {
 
   return (
     <>
+      <h2>Funding by country</h2>
+      <FundingMap rows={rows} />
+
       <h2>Top {Math.min(TOP_N, rows.length)} recipients by total funding</h2>
       <div className="chart">
         <ResponsiveContainer width="100%" height={380}>

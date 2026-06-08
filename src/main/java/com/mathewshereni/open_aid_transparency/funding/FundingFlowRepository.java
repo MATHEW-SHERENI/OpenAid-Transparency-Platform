@@ -22,10 +22,10 @@ public interface FundingFlowRepository extends JpaRepository<FundingFlow, Long> 
      */
     @Query("""
             SELECT new com.mathewshereni.open_aid_transparency.funding.FundingByRecipient(
-                       r.id, r.countryName, f.currency, SUM(f.amount), COUNT(f))
+                       r.id, r.isoCode, r.countryName, f.currency, SUM(f.amount), COUNT(f))
             FROM FundingFlow f
             JOIN f.recipient r
-            GROUP BY r.id, r.countryName, f.currency
+            GROUP BY r.id, r.isoCode, r.countryName, f.currency
             ORDER BY SUM(f.amount) DESC
             """)
     List<FundingByRecipient> totalByRecipient();
