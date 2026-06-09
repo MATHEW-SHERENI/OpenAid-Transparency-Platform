@@ -27,7 +27,7 @@ import java.util.List;
 public class ReportExportService {
 
     private static final String[] HEADERS =
-            {"recipientId", "countryName", "currency", "totalAmount", "flowCount"};
+            {"recipientId", "isoCode", "countryName", "currency", "totalAmount", "flowCount"};
 
     // ---------- CSV ----------
 
@@ -42,6 +42,7 @@ public class ReportExportService {
         for (FundingByRecipient r : rows) {
             appendCsvRow(sb, new String[]{
                     String.valueOf(r.recipientId()),
+                    r.isoCode(),
                     r.countryName(),
                     r.currency(),
                     r.totalAmount().toPlainString(),
@@ -103,6 +104,7 @@ public class ReportExportService {
             Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
             for (FundingByRecipient r : rows) {
                 table.addCell(new Phrase(String.valueOf(r.recipientId()), cellFont));
+                table.addCell(new Phrase(r.isoCode() == null ? "" : r.isoCode(), cellFont));
                 table.addCell(new Phrase(r.countryName(), cellFont));
                 table.addCell(new Phrase(r.currency(), cellFont));
 

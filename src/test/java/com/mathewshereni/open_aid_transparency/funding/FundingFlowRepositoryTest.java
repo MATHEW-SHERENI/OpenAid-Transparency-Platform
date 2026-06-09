@@ -3,6 +3,7 @@ package com.mathewshereni.open_aid_transparency.funding;
 import com.mathewshereni.open_aid_transparency.donor.Donor;
 import com.mathewshereni.open_aid_transparency.donor.DonorType;
 import com.mathewshereni.open_aid_transparency.recipient.Recipient;
+import com.mathewshereni.open_aid_transparency.sdg.SdgGoal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -92,5 +93,39 @@ class FundingFlowRepositoryTest {
         assertThat(repository.existsByRecipientAndYearAndDonor(kenya, 2024, wb)).isTrue();
         // Same recipient + donor but a different year -> not a duplicate.
         assertThat(repository.existsByRecipientAndYearAndDonor(kenya, 2023, wb)).isFalse();
+    }
+
+    @Test
+    void totalBySdg_sumsTaggedFlowsByGoalAndExcludesUntagged() {
+        Donor wb = persistDonor("World Bank");
+        Recipient kenya = persistRecipient("Kenya");
+        SdgGoal cleanWater = em.persist(SdgGoal.builder().goalNumber(6).title("Clean Water").build());
+        SdgGoal health = em.persist(SdgGoal.builder().goalNumber(3).title("Good Health").build());
+
+        // SDG 6: 100 + 200 = 300 (2 flows); SDG 3: 50 (1 flow); one UNTAGGED flow.
+        em.persist(taggedFlow(wb, kenya, 2023, "100.00", cleanWater));
+        em.persist(taggedFlow(wb, kenya, 2024, "200.00", cleanWater));
+        em.persist(taggedFlow(wb, kenya, 2022, "50.00", health));
+        persistFlow(wb, kenya, "USD", 2021, "999.00");   // no SDG tag -> excluded
+        em.flush();
+        em.clear();
+
+        var report = repository.totalBySdg();
+
+        // Only the two tagged goals, ordered by goal number ascending (3, then 6).
+        assertThat(report).hasSize(2);
+        assertThat(report.get(0).goalNumber()).isEqualTo(3);
+        assertThat(report.get(0).totalAmount()).isEqualByComparingTo("50.00");
+        assertThat(report.get(1).goalNumber()).isEqualTo(6);
+        assertThat(report.get(1).totalAmount()).isEqualByComparingTo("300.00");
+        assertThat(report.get(1).flowCount()).isEqualTo(2L);
+    }
+
+    private FundingFlow taggedFlow(Donor donor, Recipient recipient, int year, String amount, SdgGoal goal) {
+        return FundingFlow.builder()
+                .donor(donor).recipient(recipient)
+                .currency("USD").year(year).amount(new BigDecimal(amount))
+                .sdgGoal(goal)
+                .build();
     }
 }

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
  */
 public record FundingByRecipient(
         Long recipientId,
+        String isoCode,
         String countryName,
         String currency,
         BigDecimal totalAmount,

@@ -3,6 +3,7 @@ package com.mathewshereni.open_aid_transparency.funding;
 import com.mathewshereni.open_aid_transparency.donor.Donor;
 import com.mathewshereni.open_aid_transparency.project.AidProject;
 import com.mathewshereni.open_aid_transparency.recipient.Recipient;
+import com.mathewshereni.open_aid_transparency.sdg.SdgGoal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -82,4 +83,12 @@ public class FundingFlow {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aid_project_id")
     private AidProject project;
+
+
+     // The sector/category this funding advances, as one of the 17 SDGs (e.g. SDG 6
+     // = Clean Water, SDG 3 = Health). Optional - powers the "funding by SDG" report.
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sdg_goal_id")
+    private SdgGoal sdgGoal;
 }

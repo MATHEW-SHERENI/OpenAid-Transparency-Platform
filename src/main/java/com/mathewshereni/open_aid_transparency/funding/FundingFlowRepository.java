@@ -22,11 +22,26 @@ public interface FundingFlowRepository extends JpaRepository<FundingFlow, Long> 
      */
     @Query("""
             SELECT new com.mathewshereni.open_aid_transparency.funding.FundingByRecipient(
-                       r.id, r.countryName, f.currency, SUM(f.amount), COUNT(f))
+                       r.id, r.isoCode, r.countryName, f.currency, SUM(f.amount), COUNT(f))
             FROM FundingFlow f
             JOIN f.recipient r
-            GROUP BY r.id, r.countryName, f.currency
+            GROUP BY r.id, r.isoCode, r.countryName, f.currency
             ORDER BY SUM(f.amount) DESC
             """)
     List<FundingByRecipient> totalByRecipient();
+
+    /**
+     * Funding grouped by SDG category. The JOIN (not LEFT JOIN) on f.sdgGoal means
+     * flows with no SDG tag are naturally excluded, so the report shows only
+     * categorised funding.
+     */
+    @Query("""
+            SELECT new com.mathewshereni.open_aid_transparency.funding.FundingBySdg(
+                       g.goalNumber, g.title, SUM(f.amount), COUNT(f))
+            FROM FundingFlow f
+            JOIN f.sdgGoal g
+            GROUP BY g.goalNumber, g.title
+            ORDER BY g.goalNumber ASC
+            """)
+    List<FundingBySdg> totalBySdg();
 }

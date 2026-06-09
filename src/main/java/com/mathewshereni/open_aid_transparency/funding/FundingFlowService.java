@@ -42,6 +42,12 @@ public class FundingFlowService {
         return repository.totalByRecipient();
     }
 
+    /** Total funding grouped by SDG category (only flows tagged with an SDG). */
+    @Transactional(readOnly = true)
+    public List<FundingBySdg> totalBySdg() {
+        return repository.totalBySdg();
+    }
+
     @Transactional
     public FundingFlowResponse create(FundingFlowRequest request) {
         FundingFlow flow = FundingFlow.builder()

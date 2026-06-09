@@ -19,6 +19,86 @@
   color: #6b7280;
 }
 
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.auth-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.auth-box .who {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.login {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.login input {
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+button {
+  padding: 6px 12px;
+  border: 1px solid #1e3a8a;
+  background: #1e3a8a;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-error {
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+.admin {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.admin-actions,
+.upload {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0 0 8px;
+}
+
+.status.ok {
+  color: #15803d;
+}
+
 h2 {
   font-size: 1.1rem;
   color: #374151;

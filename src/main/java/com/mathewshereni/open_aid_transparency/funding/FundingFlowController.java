@@ -39,6 +39,12 @@ public class FundingFlowController {
         return service.totalByRecipient();
     }
 
+    /** Reporting endpoint: total funding per SDG category. */
+    @GetMapping("/reports/by-sdg")
+    public List<FundingBySdg> totalBySdg() {
+        return service.totalBySdg();
+    }
+
     /** Same report as a downloadable CSV file. */
     @GetMapping(value = "/reports/by-recipient.csv", produces = "text/csv")
     public ResponseEntity<byte[]> totalByRecipientCsv() {

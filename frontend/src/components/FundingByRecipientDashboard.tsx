@@ -1,22 +1,11 @@
-import { useEffect, useState } from 'react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { fetchFundingByRecipient, type FundingByRecipient } from '../api/reports'
 
-// Compact money formatting for axis/labels, e.g. 18996950927 -> "$19B".
-const compactUsd = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  notation: 'compact',
-  maximumFractionDigits: 1,
-})
+// Lazy-loaded so the heavy charting (Recharts) and mapping (Leaflet) libraries
+// land in their own JS chunks, fetched on demand instead of in the initial bundle.
+const FundingChart = lazy(() => import('./FundingChart').then((m) => ({ default: m.FundingChart })))
+const FundingMap = lazy(() => import('./FundingMap').then((m) => ({ default: m.FundingMap })))
+
 const fullUsd = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -25,18 +14,32 @@ const fullUsd = new Intl.NumberFormat('en-US', {
 
 const TOP_N = 10
 
-export function FundingByRecipientDashboard() {
+export function FundingByRecipientDashboard({ refreshKey = 0 }: { refreshKey?: number }) {
   const [rows, setRows] = useState<FundingByRecipient[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch once when the component mounts.
+  // Fetch on mount, and again whenever refreshKey changes (after an admin import).
+  // The `active` guard discards a stale response if refreshKey changes mid-flight.
   useEffect(() => {
-    fetchFundingByRecipient()
-      .then(setRows)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Unknown error'))
-      .finally(() => setLoading(false))
-  }, [])
+    let active = true
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await fetchFundingByRecipient()
+        if (active) setRows(data)
+      } catch (e) {
+        if (active) setError(e instanceof Error ? e.message : 'Unknown error')
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      active = false
+    }
+  }, [refreshKey])
 
   if (loading) {
     return <p className="status">Loading funding data…</p>
@@ -53,18 +56,15 @@ export function FundingByRecipientDashboard() {
 
   return (
     <>
+      <h2>Funding by country</h2>
+      <Suspense fallback={<p className="status">Loading map…</p>}>
+        <FundingMap rows={rows} />
+      </Suspense>
+
       <h2>Top {Math.min(TOP_N, rows.length)} recipients by total funding</h2>
-      <div className="chart">
-        <ResponsiveContainer width="100%" height={380}>
-          <BarChart data={topRows} margin={{ top: 8, right: 16, bottom: 64, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="countryName" angle={-40} textAnchor="end" interval={0} height={70} />
-            <YAxis tickFormatter={(v: number) => compactUsd.format(v)} width={70} />
-            <Tooltip formatter={(value) => fullUsd.format(Number(value))} />
-            <Bar dataKey="totalAmount" name="Total funding" fill="#2563eb" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <Suspense fallback={<p className="status">Loading chart…</p>}>
+        <FundingChart rows={topRows} />
+      </Suspense>
 
       <h2>All recipients ({rows.length})</h2>
       <table className="report">
