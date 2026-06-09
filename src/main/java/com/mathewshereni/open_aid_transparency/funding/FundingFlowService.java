@@ -48,6 +48,18 @@ public class FundingFlowService {
         return repository.totalBySdg();
     }
 
+    /** Total funding per year (trend). */
+    @Transactional(readOnly = true)
+    public List<FundingByYear> totalByYear() {
+        return repository.totalByYear();
+    }
+
+    /** Total funding per donor (ranking). */
+    @Transactional(readOnly = true)
+    public List<FundingByDonor> totalByDonor() {
+        return repository.totalByDonor();
+    }
+
     @Transactional
     public FundingFlowResponse create(FundingFlowRequest request) {
         FundingFlow flow = FundingFlow.builder()

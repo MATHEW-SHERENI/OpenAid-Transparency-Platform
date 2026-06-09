@@ -8,6 +8,9 @@ import './App.css'
 const FundingSdgSection = lazy(() =>
   import('./components/FundingSdgSection').then((m) => ({ default: m.FundingSdgSection })),
 )
+const FundingTrendsSection = lazy(() =>
+  import('./components/FundingTrendsSection').then((m) => ({ default: m.FundingTrendsSection })),
+)
 
 function App() {
   const { user, isAdmin, logout } = useAuth()
@@ -40,6 +43,9 @@ function App() {
       <main>
         {isAdmin && <AdminPanel onDataChanged={() => setRefreshKey((k) => k + 1)} />}
         <FundingByRecipientDashboard refreshKey={refreshKey} />
+        <Suspense fallback={<p className="status">Loading…</p>}>
+          <FundingTrendsSection refreshKey={refreshKey} />
+        </Suspense>
         <Suspense fallback={<p className="status">Loading…</p>}>
           <FundingSdgSection refreshKey={refreshKey} />
         </Suspense>

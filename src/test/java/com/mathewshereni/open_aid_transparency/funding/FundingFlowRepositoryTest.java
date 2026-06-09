@@ -121,6 +121,51 @@ class FundingFlowRepositoryTest {
         assertThat(report.get(1).flowCount()).isEqualTo(2L);
     }
 
+    @Test
+    void totalByYear_sumsAllFlowsPerYearOldestFirst() {
+        Donor wb = persistDonor("World Bank");
+        Recipient kenya = persistRecipient("Kenya");
+        Recipient nigeria = persistRecipient("Nigeria");
+
+        // 2023: 100 + 300 = 400 (2 flows, across recipients); 2024: 200 (1 flow).
+        persistFlow(wb, kenya, "USD", 2023, "100.00");
+        persistFlow(wb, nigeria, "USD", 2023, "300.00");
+        persistFlow(wb, kenya, "USD", 2024, "200.00");
+        em.flush();
+
+        List<FundingByYear> report = repository.totalByYear();
+
+        assertThat(report).hasSize(2);
+        // Oldest first.
+        assertThat(report.get(0).year()).isEqualTo(2023);
+        assertThat(report.get(0).totalAmount()).isEqualByComparingTo("400.00");
+        assertThat(report.get(0).flowCount()).isEqualTo(2L);
+        assertThat(report.get(1).year()).isEqualTo(2024);
+        assertThat(report.get(1).totalAmount()).isEqualByComparingTo("200.00");
+    }
+
+    @Test
+    void totalByDonor_sumsPerDonorLargestFirst() {
+        Donor wb = persistDonor("World Bank");
+        Donor gates = persistDonor("Gates Foundation");
+        Recipient kenya = persistRecipient("Kenya");
+
+        // World Bank: 100 + 150 = 250; Gates: 500 (the larger -> first).
+        persistFlow(wb, kenya, "USD", 2023, "100.00");
+        persistFlow(wb, kenya, "USD", 2024, "150.00");
+        persistFlow(gates, kenya, "USD", 2023, "500.00");
+        em.flush();
+
+        List<FundingByDonor> report = repository.totalByDonor();
+
+        assertThat(report).hasSize(2);
+        assertThat(report.get(0).donorName()).isEqualTo("Gates Foundation");
+        assertThat(report.get(0).totalAmount()).isEqualByComparingTo("500.00");
+        assertThat(report.get(1).donorName()).isEqualTo("World Bank");
+        assertThat(report.get(1).totalAmount()).isEqualByComparingTo("250.00");
+        assertThat(report.get(1).flowCount()).isEqualTo(2L);
+    }
+
     private FundingFlow taggedFlow(Donor donor, Recipient recipient, int year, String amount, SdgGoal goal) {
         return FundingFlow.builder()
                 .donor(donor).recipient(recipient)

@@ -44,4 +44,25 @@ public interface FundingFlowRepository extends JpaRepository<FundingFlow, Long> 
             ORDER BY g.goalNumber ASC
             """)
     List<FundingBySdg> totalBySdg();
+
+    /** Funding totalled per year, oldest first - the data behind the trend chart. */
+    @Query("""
+            SELECT new com.mathewshereni.open_aid_transparency.funding.FundingByYear(
+                       f.year, SUM(f.amount), COUNT(f))
+            FROM FundingFlow f
+            GROUP BY f.year
+            ORDER BY f.year ASC
+            """)
+    List<FundingByYear> totalByYear();
+
+    /** Funding totalled per donor, largest first. */
+    @Query("""
+            SELECT new com.mathewshereni.open_aid_transparency.funding.FundingByDonor(
+                       d.id, d.name, SUM(f.amount), COUNT(f))
+            FROM FundingFlow f
+            JOIN f.donor d
+            GROUP BY d.id, d.name
+            ORDER BY SUM(f.amount) DESC
+            """)
+    List<FundingByDonor> totalByDonor();
 }

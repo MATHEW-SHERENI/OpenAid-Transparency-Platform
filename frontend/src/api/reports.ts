@@ -35,3 +35,32 @@ export async function fetchFundingBySdg(): Promise<FundingBySdg[]> {
   }
   return response.json()
 }
+
+export interface FundingByYear {
+  year: number
+  totalAmount: number
+  flowCount: number
+}
+
+export async function fetchFundingByYear(): Promise<FundingByYear[]> {
+  const response = await fetch('/api/funding-flows/reports/by-year')
+  if (!response.ok) {
+    throw new Error(`Failed to load yearly report (HTTP ${response.status})`)
+  }
+  return response.json()
+}
+
+export interface FundingByDonor {
+  donorId: number
+  donorName: string
+  totalAmount: number
+  flowCount: number
+}
+
+export async function fetchFundingByDonor(): Promise<FundingByDonor[]> {
+  const response = await fetch('/api/funding-flows/reports/by-donor')
+  if (!response.ok) {
+    throw new Error(`Failed to load donor report (HTTP ${response.status})`)
+  }
+  return response.json()
+}

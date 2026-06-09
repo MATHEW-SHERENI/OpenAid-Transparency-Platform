@@ -45,6 +45,18 @@ public class FundingFlowController {
         return service.totalBySdg();
     }
 
+    /** Reporting endpoint: total funding per year (trend). */
+    @GetMapping("/reports/by-year")
+    public List<FundingByYear> totalByYear() {
+        return service.totalByYear();
+    }
+
+    /** Reporting endpoint: total funding per donor (ranking). */
+    @GetMapping("/reports/by-donor")
+    public List<FundingByDonor> totalByDonor() {
+        return service.totalByDonor();
+    }
+
     /** Same report as a downloadable CSV file. */
     @GetMapping(value = "/reports/by-recipient.csv", produces = "text/csv")
     public ResponseEntity<byte[]> totalByRecipientCsv() {
