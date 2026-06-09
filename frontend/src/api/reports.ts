@@ -20,3 +20,18 @@ export async function fetchFundingByRecipient(): Promise<FundingByRecipient[]> {
   }
   return response.json()
 }
+
+export interface FundingBySdg {
+  goalNumber: number
+  goalTitle: string
+  totalAmount: number
+  flowCount: number
+}
+
+export async function fetchFundingBySdg(): Promise<FundingBySdg[]> {
+  const response = await fetch('/api/funding-flows/reports/by-sdg')
+  if (!response.ok) {
+    throw new Error(`Failed to load SDG report (HTTP ${response.status})`)
+  }
+  return response.json()
+}
