@@ -53,7 +53,7 @@ jobs:
           DB_PASSWORD: openaid
 
   frontend:
-    name: Frontend lint & build
+    name: Frontend lint, test & build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -74,6 +74,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Unit tests (Vitest)
+        run: npm run test
 
       - name: Type-check & build
         run: npm run build
